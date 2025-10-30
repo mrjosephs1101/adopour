@@ -4,8 +4,9 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { PostCard } from "@/components/post-card"
-import { UserPlus, Mail } from "lucide-react"
+import { UserPlus, Mail, Shield, CheckCircle2 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
 interface ProfileContentProps {
@@ -16,6 +17,9 @@ interface ProfileContentProps {
     avatar_url?: string
     bio?: string
     created_at: string
+    is_developer?: boolean
+    is_admin?: boolean
+    is_verified?: boolean
   }
   posts: Array<{
     id: string
@@ -26,6 +30,9 @@ interface ProfileContentProps {
       username: string
       display_name: string
       avatar_url?: string
+      is_developer?: boolean
+      is_admin?: boolean
+      is_verified?: boolean
     }
     likes_count: number
     comments_count: number
@@ -35,6 +42,8 @@ interface ProfileContentProps {
   friendsCount: number
   isOwnProfile: boolean
   userId: string
+  currentUserIsDeveloper?: boolean
+  currentUserIsAdmin?: boolean
 }
 
 export function ProfileContent({
@@ -44,6 +53,8 @@ export function ProfileContent({
   friendsCount,
   isOwnProfile,
   userId,
+  currentUserIsDeveloper,
+  currentUserIsAdmin,
 }: ProfileContentProps) {
   const [posts, setPosts] = useState(initialPosts)
 
@@ -87,6 +98,17 @@ export function ProfileContent({
     }
   }
 
+  const handleDelete = async (postId: string) => {
+    if (!currentUserIsDeveloper && !currentUserIsAdmin) return
+
+    const supabase = createClient()
+    const { error } = await supabase.from("posts").delete().eq("id", postId)
+
+    if (!error) {
+      setPosts(posts.filter((p) => p.id !== postId))
+    }
+  }
+
   return (
     <main className="container max-w-4xl py-8 space-y-6">
       <Card>
@@ -100,7 +122,27 @@ export function ProfileContent({
             </Avatar>
             <div className="flex-1 space-y-4">
               <div>
-                <h1 className="text-3xl font-bold">{profile.display_name}</h1>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-3xl font-bold">{profile.display_name}</h1>
+                  {profile.is_developer && (
+                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Developer
+                    </Badge>
+                  )}
+                  {profile.is_admin && (
+                    <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+                      <Shield className="h-3 w-3 mr-1" />
+                      Admin
+                    </Badge>
+                  )}
+                  {profile.is_verified && (
+                    <Badge className="bg-blue-500 text-white">
+                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      Verified
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-muted-foreground">@{profile.username}</p>
               </div>
               {profile.bio && <p className="text-sm">{profile.bio}</p>}
@@ -134,7 +176,14 @@ export function ProfileContent({
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Posts</h2>
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} onLike={handleLike} />
+          <PostCard
+            key={post.id}
+            post={post}
+            onLike={handleLike}
+            currentUserIsDeveloper={currentUserIsDeveloper}
+            currentUserIsAdmin={currentUserIsAdmin}
+            onDelete={handleDelete}
+          />
         ))}
         {posts.length === 0 && (
           <Card>

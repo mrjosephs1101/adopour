@@ -15,13 +15,12 @@ export default async function FeedPage() {
     profile = data
   }
 
-  // Get posts with author info, likes count, and comments count
   const { data: posts } = await supabase
     .from("posts")
     .select(
       `
       *,
-      author:profiles!posts_author_id_fkey(username, display_name, avatar_url),
+      author:profiles!posts_author_id_fkey(username, display_name, avatar_url, is_developer, is_admin, is_verified),
       likes(count),
       comments(count)
     `,

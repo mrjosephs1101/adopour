@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Home, User, MessageCircle, Bell, LogOut, Sparkles } from "lucide-react"
+import { Home, User, MessageCircle, Bell, LogOut, Sparkles, UserCog, Users, Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -17,6 +17,7 @@ interface NavigationProps {
     username: string
     display_name: string
     avatar_url?: string
+    is_developer?: boolean
   } | null
 }
 
@@ -34,13 +35,16 @@ export function Navigation({ user, profile }: NavigationProps) {
     user && profile
       ? [
           { href: "/feed", icon: Home, label: "Feed" },
+          { href: "/communities", icon: Users, label: "Communities" },
           { href: `/profile/${profile.username}`, icon: User, label: "Profile" },
           { href: "/messages", icon: MessageCircle, label: "Messages" },
           { href: "/notifications", icon: Bell, label: "Notifications" },
           { href: "/ado", icon: Sparkles, label: "AdoAI" },
+          ...(profile.is_developer ? [{ href: "/admin", icon: UserCog, label: "Admin" }] : []),
         ]
       : [
           { href: "/feed", icon: Home, label: "Feed" },
+          { href: "/business", icon: Building2, label: "Business" },
           { href: "/ado", icon: Sparkles, label: "AdoAI" },
         ]
 

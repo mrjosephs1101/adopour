@@ -13,7 +13,9 @@ interface FeedContentProps {
     username: string
     display_name: string
     avatar_url?: string
-  } | null // Made profile optional
+    is_developer?: boolean
+    is_admin?: boolean
+  } | null
   initialPosts: Array<{
     id: string
     content: string
@@ -23,19 +25,22 @@ interface FeedContentProps {
       username: string
       display_name: string
       avatar_url?: string
+      is_developer?: boolean
+      is_admin?: boolean
+      is_verified?: boolean
     }
     likes_count: number
     comments_count: number
     is_liked: boolean
   }>
-  userId?: string // Made userId optional
+  userId?: string
 }
 
 export function FeedContent({ profile, initialPosts, userId }: FeedContentProps) {
   const [posts, setPosts] = useState(initialPosts)
   const router = useRouter()
 
-  const handleCreatePost = async (content: string) => {
+  const handleCreatePost = async (content: string, communityId?: string) => {
     if (!userId) {
       router.push("/auth/login")
       return
@@ -48,11 +53,12 @@ export function FeedContent({ profile, initialPosts, userId }: FeedContentProps)
       .insert({
         content,
         author_id: userId,
+        community_id: communityId,
       })
       .select(
         `
         *,
-        author:profiles!posts_author_id_fkey(username, display_name, avatar_url)
+        author:profiles!posts_author_id_fkey(username, display_name, avatar_url, is_developer, is_admin, is_verified)
       `,
       )
       .single()
@@ -86,7 +92,6 @@ export function FeedContent({ profile, initialPosts, userId }: FeedContentProps)
     if (!post) return
 
     if (post.is_liked) {
-      // Unlike
       await supabase.from("likes").delete().eq("post_id", postId).eq("user_id", userId)
 
       setPosts(
@@ -101,7 +106,6 @@ export function FeedContent({ profile, initialPosts, userId }: FeedContentProps)
         ),
       )
     } else {
-      // Like
       await supabase.from("likes").insert({
         post_id: postId,
         user_id: userId,
@@ -118,6 +122,17 @@ export function FeedContent({ profile, initialPosts, userId }: FeedContentProps)
             : p,
         ),
       )
+    }
+  }
+
+  const handleDelete = async (postId: string) => {
+    if (!profile?.is_developer && !profile?.is_admin) return
+
+    const supabase = createClient()
+    const { error } = await supabase.from("posts").delete().eq("id", postId)
+
+    if (!error) {
+      setPosts(posts.filter((p) => p.id !== postId))
     }
   }
 
@@ -144,7 +159,14 @@ export function FeedContent({ profile, initialPosts, userId }: FeedContentProps)
       )}
       <div className="space-y-4">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} onLike={handleLike} />
+          <PostCard
+            key={post.id}
+            post={post}
+            onLike={handleLike}
+            currentUserIsDeveloper={profile?.is_developer}
+            currentUserIsAdmin={profile?.is_admin}
+            onDelete={handleDelete}
+          />
         ))}
         {posts.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
