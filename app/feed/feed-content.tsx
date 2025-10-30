@@ -137,7 +137,7 @@ export function FeedContent({ profile, initialPosts, userId }: FeedContentProps)
   }
 
   return (
-    <main className="container max-w-2xl py-8 space-y-6">
+    <main className="container max-w-2xl mx-auto py-8 space-y-6">
       {profile ? (
         <CreatePost profile={profile} onPost={handleCreatePost} />
       ) : (

@@ -1,9 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Home, User, MessageCircle, Bell, LogOut, Sparkles, UserCog, Users, Building2 } from "lucide-react"
+import { User, MessageCircle, Bell, LogOut, UserCog, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -34,51 +33,34 @@ export function Navigation({ user, profile }: NavigationProps) {
   const navItems =
     user && profile
       ? [
-          { href: "/feed", icon: Home, label: "Feed" },
           { href: "/communities", icon: Users, label: "Communities" },
           { href: `/profile/${profile.username}`, icon: User, label: "Profile" },
           { href: "/messages", icon: MessageCircle, label: "Messages" },
           { href: "/notifications", icon: Bell, label: "Notifications" },
-          { href: "/ado", icon: Sparkles, label: "AdoAI" },
           ...(profile.is_developer ? [{ href: "/admin", icon: UserCog, label: "Admin" }] : []),
         ]
-      : [
-          { href: "/feed", icon: Home, label: "Feed" },
-          { href: "/business", icon: Building2, label: "Business" },
-          { href: "/ado", icon: Sparkles, label: "AdoAI" },
-        ]
+      : []
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-6">
-          <Link href="/feed" className="flex items-center gap-2">
-            <Image
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/adopour-icon-J9OWJHTBfvSuH4nmDJVv4Y9T2mwHGP.png"
-              alt="Adopour"
-              width={40}
-              height={40}
-            />
-            <span className="text-2xl font-bold text-cyan-600">Adopour</span>
-          </Link>
-          <div className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const isActive = pathname === item.href
-              return (
-                <Link key={item.href} href={item.href}>
-                  <Button
-                    variant={isActive ? "secondary" : "ghost"}
-                    size="sm"
-                    className={isActive ? "bg-cyan-100 text-cyan-700" : ""}
-                  >
-                    <Icon className="h-4 w-4 mr-2" />
-                    {item.label}
-                  </Button>
-                </Link>
-              )
-            })}
-          </div>
+        <div className="flex items-center gap-1">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            return (
+              <Link key={item.href} href={item.href}>
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  size="sm"
+                  className={isActive ? "bg-cyan-100 text-cyan-700" : ""}
+                >
+                  <Icon className="h-4 w-4 mr-2" />
+                  {item.label}
+                </Button>
+              </Link>
+            )
+          })}
         </div>
         <div className="flex items-center gap-2">
           {user ? (
