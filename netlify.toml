@@ -1,0 +1,8 @@
+[build]
+  command = "pnpm build"        # Build command using pnpm
+  publish = ".next"             # Directory containing the production build files
+  functions = "netlify/functions"        # Optional: path to your serverless functions if you have any
+
+[contexts]
+  production.environment = { NODE_ENV = "production" }  # Set production environment variables
+  deploy-preview.environment = { NODE_ENV = "preview" }   # Set environment for deploy previews
